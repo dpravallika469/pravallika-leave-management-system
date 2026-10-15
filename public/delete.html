@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Leave Request</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Delete Leave Request</h1>
+    <p>Remove an employee leave record</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="list.html">Leave Requests</a>
+    <a href="search.html">Search Leave</a>
+    <a href="insert.html">Insert Leave</a>
+    <a href="update.html">Update Leave</a>
+    <a href="delete.html">Delete Leave</a>
+</nav>
+
+<main class="hero">
+    <h2>Delete Employee Leave</h2>
+
+    <form id="deleteForm" style="max-width:450px;margin:25px auto;">
+        <label for="employeeId">Employee ID</label>
+
+        <input
+            type="number"
+            id="employeeId"
+            min="1"
+            required
+            placeholder="Enter Employee ID"
+            style="width:100%;padding:12px;margin:12px 0;"
+        >
+
+        <button type="submit" class="btn">Delete Record</button>
+    </form>
+
+    <p id="message" role="status"></p>
+</main>
+
+<footer>
+    <p>Leave Management System</p>
+</footer>
+
+<script>
+document.getElementById("deleteForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById("employeeId").value;
+    const message = document.getElementById("message");
+
+    if (!confirm("Are you sure you want to delete this leave record?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/leaves/" + encodeURIComponent(id), {
+            method: "DELETE"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Delete failed");
+        }
+
+        message.textContent = data.message;
+        message.style.color = "green";
+        this.reset();
+    } catch (error) {
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+});
+</script>
+
+</body>
+</html>

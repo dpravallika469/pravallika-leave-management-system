@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Leave</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Search Leave Request</h1>
+    <p>Find employee leave records easily</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="list.html">Leave Requests</a>
+    <a href="search.html">Search Leave</a>
+    <a href="insert.html">Insert Leave</a>
+    <a href="update.html">Update Leave</a>
+    <a href="delete.html">Delete Leave</a>
+</nav>
+
+<main class="hero">
+    <h2>Search by Employee ID</h2>
+
+    <form id="searchForm" style="max-width:450px;margin:25px auto;">
+        <input type="number" id="employeeId" min="1" required
+               placeholder="Enter Employee ID"
+               style="width:100%;padding:12px;margin-bottom:15px;">
+
+        <button type="submit" class="btn">Search</button>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <div id="result" style="max-width:500px;margin:20px auto;text-align:left;"></div>
+</main>
+
+<footer>
+    <p>Leave Management System</p>
+</footer>
+
+<script>
+document.getElementById("searchForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById("employeeId").value;
+    const message = document.getElementById("message");
+    const resultDiv = document.getElementById("result");
+
+    message.textContent = "Searching...";
+    resultDiv.replaceChildren();
+
+    try {
+        const response = await fetch("/leaves/" + encodeURIComponent(id));
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Record not found");
+        }
+
+        message.textContent = "Leave record found!";
+        message.style.color = "green";
+
+        const details = [
+            ["Employee ID", data.EMPLOYEE_ID],
+            ["Name", data.NAME],
+            ["Department", data.DEPARTMENT],
+            ["Leave Type", data.TYPE_OF_LEAVE],
+            ["Number of Days", data.NUMBER_OF_DAYS],
+            ["Description", data.DESCRIPTION || "Not provided"]
+        ];
+
+        details.forEach(([label, value]) => {
+            const p = document.createElement("p");
+            const strong = document.createElement("strong");
+            strong.textContent = label + ": ";
+            p.append(strong, document.createTextNode(String(value)));
+            resultDiv.appendChild(p);
+        });
+    } catch (error) {
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+});
+</script>
+
+</body>
+</html>

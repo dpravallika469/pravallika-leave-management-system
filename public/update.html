@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Leave Request</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Update Leave Request</h1>
+    <p>Edit an existing employee leave record</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="list.html">Leave Requests</a>
+    <a href="search.html">Search Leave</a>
+    <a href="insert.html">Insert Leave</a>
+    <a href="update.html">Update Leave</a>
+    <a href="delete.html">Delete Leave</a>
+</nav>
+
+<main class="hero">
+    <h2>Update Employee Details</h2>
+
+    <form id="updateForm" style="max-width:500px;margin:25px auto;text-align:left;">
+
+        <label>Employee ID (cannot be changed)</label>
+        <input type="number" id="employeeId" min="1" required
+               placeholder="Enter Employee ID"
+               style="width:100%;padding:12px;margin:8px 0 16px;">
+
+        <button type="button" class="btn" id="findButton">Find Record</button>
+
+        <div id="editFields" hidden>
+            <label>Employee Name</label>
+            <input type="text" id="name" required
+                   style="width:100%;padding:12px;margin:8px 0 16px;">
+
+            <label>Department</label>
+            <input type="text" id="department" required
+                   style="width:100%;padding:12px;margin:8px 0 16px;">
+
+            <label>Type of Leave</label>
+            <select id="leaveType" required
+                    style="width:100%;padding:12px;margin:8px 0 16px;">
+                <option value="Casual Leave">Casual Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Earned Leave">Earned Leave</option>
+                <option value="Personal Leave">Personal Leave</option>
+            </select>
+
+            <label>Number of Days</label>
+            <input type="number" id="days" min="1" required
+                   style="width:100%;padding:12px;margin:8px 0 16px;">
+
+            <label>Description</label>
+            <textarea id="description" rows="4"
+                      style="width:100%;padding:12px;margin:8px 0 16px;"></textarea>
+
+            <button type="submit" class="btn">Save Changes</button>
+        </div>
+
+        <p id="message" role="status" style="margin-top:15px;"></p>
+    </form>
+</main>
+
+<footer>
+    <p>Leave Management System</p>
+</footer>
+
+<script>
+const form = document.getElementById("updateForm");
+const message = document.getElementById("message");
+const editFields = document.getElementById("editFields");
+
+document.getElementById("findButton").addEventListener("click", async () => {
+    const id = document.getElementById("employeeId").value;
+
+    if (!id || Number(id) < 1) {
+        message.textContent = "Please enter a valid Employee ID.";
+        message.style.color = "red";
+        return;
+    }
+
+    message.textContent = "Searching...";
+    editFields.hidden = true;
+
+    try {
+        const response = await fetch("/leaves/" + encodeURIComponent(id));
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Record not found");
+        }
+
+        document.getElementById("name").value = data.NAME;
+        document.getElementById("department").value = data.DEPARTMENT;
+        document.getElementById("leaveType").value = data.TYPE_OF_LEAVE;
+        document.getElementById("days").value = data.NUMBER_OF_DAYS;
+        document.getElementById("description").value = data.DESCRIPTION || "";
+
+        editFields.hidden = false;
+        message.textContent = "Record found. Edit the details below.";
+        message.style.color = "green";
+    } catch (error) {
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+});
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const id = document.getElementById("employeeId").value;
+
+    const updatedLeave = {
+        NAME: document.getElementById("name").value.trim(),
+        DEPARTMENT: document.getElementById("department").value.trim(),
+        TYPE_OF_LEAVE: document.getElementById("leaveType").value,
+        NUMBER_OF_DAYS: Number(document.getElementById("days").value),
+        DESCRIPTION: document.getElementById("description").value.trim()
+    };
+
+    try {
+        const response = await fetch("/leaves/" + encodeURIComponent(id), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedLeave)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Update failed");
+        }
+
+        message.textContent = data.message;
+        message.style.color = "green";
+    } catch (error) {
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+});
+</script>
+
+</body>
+</html>

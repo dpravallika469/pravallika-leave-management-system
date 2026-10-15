@@ -1,0 +1,180 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Leave Requests | Pravallika's Leave Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="brand-icon">▦</div>
+
+        <div class="brand-text">
+            <h1>Pravallika's Leave Management System</h1>
+            <p>Manage Leave · Build a Better Workplace</p>
+        </div>
+
+        <div class="header-message">
+            Happy Employees<br>
+            Build Great Teams
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a class="active" href="list.html">Leave Requests</a>
+        <a href="search.html">Search Leave</a>
+        <a href="insert.html">Insert Leave</a>
+        <a href="update.html">Update Leave</a>
+        <a href="delete.html">Delete Leave</a>
+    </nav>
+
+    <main class="leave-main">
+
+        <section class="leave-heading">
+            <h2>Employee Leave Requests</h2>
+            <p>View and manage all saved employee leave records</p>
+        </section>
+
+        <section class="leave-layout">
+
+            <div class="leave-photo">
+                <img src="images/leave.jpg"
+                     alt="Employee leave planning and calendar">
+
+                <div class="leave-photo-text">
+                    <h3>Stay Organized</h3>
+                    <p>
+                        Manage employee leave records in one place.
+                        View saved requests and keep your records organized.
+                    </p>
+
+                    <a class="btn" href="insert.html">
+                        + Add New Leave
+                    </a>
+                </div>
+            </div>
+
+            <div class="leave-records">
+
+                <div class="records-heading">
+                    <div>
+                        <h3>All Leave Records</h3>
+                        <p>Employee leave information</p>
+                    </div>
+
+                    <button class="btn" type="button"
+                            onclick="loadLeaves()">
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="leaveTable">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Leave Type</th>
+                                <th>Days</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="leaveBody">
+                            <tr>
+                                <td colspan="6">Loading records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>Pravallika's Leave Management System | © 2026</p>
+    </footer>
+
+    <script>
+        async function loadLeaves() {
+            const body = document.getElementById("leaveBody");
+
+            body.replaceChildren();
+
+            const loadingRow = document.createElement("tr");
+            const loadingCell = document.createElement("td");
+            loadingCell.colSpan = 6;
+            loadingCell.textContent = "Loading records...";
+            loadingRow.appendChild(loadingCell);
+            body.appendChild(loadingRow);
+
+            try {
+                const response = await fetch("/leaves");
+
+                if (!response.ok) {
+                    throw new Error("Could not load records");
+                }
+
+                const leaves = await response.json();
+                body.replaceChildren();
+
+                if (!Array.isArray(leaves) || leaves.length === 0) {
+                    const row = document.createElement("tr");
+                    const cell = document.createElement("td");
+                    cell.colSpan = 6;
+                    cell.textContent = "No leave records found.";
+                    row.appendChild(cell);
+                    body.appendChild(row);
+                    return;
+                }
+
+                leaves.forEach(leave => {
+                    const row = document.createElement("tr");
+
+                    [
+                        leave.EMPLOYEE_ID,
+                        leave.NAME,
+                        leave.DEPARTMENT,
+                        leave.TYPE_OF_LEAVE,
+                        leave.NUMBER_OF_DAYS,
+                        leave.DESCRIPTION || ""
+                    ].forEach(value => {
+                        const cell = document.createElement("td");
+                        cell.textContent = value ?? "";
+                        row.appendChild(cell);
+                    });
+
+                    body.appendChild(row);
+                });
+
+            } catch (error) {
+                body.replaceChildren();
+
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.colSpan = 6;
+                cell.textContent =
+                    "Unable to load records. Check the server and database.";
+
+                row.appendChild(cell);
+                body.appendChild(row);
+
+                console.error(error);
+            }
+        }
+
+        loadLeaves();
+    </script>
+
+</body>
+</html>
+```
